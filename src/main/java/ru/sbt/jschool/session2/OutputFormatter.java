@@ -27,87 +27,47 @@ import java.util.Date;
  *
  */
 public class OutputFormatter {
-    private PrintStream out;
+    private final PrintStream out;
+    private final DataFormatter formatter;
 
     public OutputFormatter(PrintStream out) {
-
         this.out = out;
+        this.formatter = new DataFormatter();
     }
 
-    public void output(String[] names, Object[][] data) {
-        int columns = names.length;
-        int[] columnWidths = new int[columns];
-        String[][] table = new String[data.length][columns];
-        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+    public void output(String[] headers, Object[][] data) {
+        TableData tableData = new TableData(headers, data);
+        tableData.prepareFormattedData(formatter);
 
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-        symbols.setDecimalSeparator(',');
-        symbols.setGroupingSeparator('.');
+        printTable(tableData);
+    }
+    private void printTable(TableData tableData) {
+        int[] columnWidths = tableData.getColumnWidths();
+        String[] headers = tableData.getHeaders();
+        String[][] formattedData = tableData.getFormattedData();
+        Object[][] rawData = tableData.getRawData();
 
-        DecimalFormat moneyformat = new DecimalFormat("###,##0.00", symbols);
-        moneyformat.setGroupingSize(3);
-        moneyformat.setGroupingUsed(true);
-
-        DecimalFormat numberformat = new DecimalFormat("###.###", symbols);
-        numberformat.setGroupingSize(3);
-        numberformat.setGroupingUsed(true);
-
-        for (int i = 0; i < columns; i++) {
-            columnWidths[i] = names[i].length();
-        }
-
-        for (int row = 0; row < data.length; row++) {
-            for (int col = 0; col < columns; col++) {
-               Object value = data[row][col];
-               String text;
-               if(value == null){
-                   text = "-";
-               }
-               else if(value instanceof String){
-                   text=((String)value).replace("\n"," ");
-               }
-               else if(value instanceof Date){
-                   text=sdf.format((Date)value);
-               }
-               else if(value instanceof Double|| value instanceof Float){
-                   text=moneyformat.format(((Number)value).doubleValue());
-               }
-               else if(value instanceof Number){
-                   text=numberformat.format(((Number)value).doubleValue());
-               }
-               else{
-                   text=value.toString();
-               }
-               table[row][col]=text;
-
-               if(text.length()>columnWidths[col]){
-                   columnWidths[col]=text.length();
-               }
-            }
-        }
         printBorder(columnWidths);
-        out.print("|");
 
-        for (int i = 0; i < columns; i++) {
-            String name = center(names[i], columnWidths[i]);
-            out.print(name+"|");
+        out.print("|");
+        for (int i = 0; i < headers.length; i++) {
+            out.print(center(headers[i], columnWidths[i]) + "|");
         }
         out.println();
         printBorder(columnWidths);
 
-        for (int row = 0; row < data.length; row++) {
+        for (int row = 0; row < formattedData.length; row++) {
             out.print("|");
-            for (int col = 0; col < columns; col++) {
-                String text = table[row][col];
-                boolean rightAligned = isRightAligned(data[row][col]);
+            for (int col = 0; col < headers.length; col++) {
+                String text = formattedData[row][col];
+                boolean rightAligned = formatter.isRightAligned(rawData[row][col]);
                 String formatted = rightAligned ? padLeft(text, columnWidths[col]) : padRight(text, columnWidths[col]);
-                out.print(formatted+"|");
+                out.print(formatted + "|");
             }
             out.println();
             printBorder(columnWidths);
         }
     }
-
     private void printBorder(int[] widths) {
         out.print("+");
         for (int w : widths) {
@@ -132,10 +92,6 @@ public class OutputFormatter {
         return repeat(' ', left) + text + repeat(' ', right);
     }
 
-    private boolean isRightAligned(Object value) {
-        return value instanceof Date || value instanceof Number || value == null;
-    }
-
     private String repeat(char ch, int count) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < count; i++) {
@@ -144,3 +100,100 @@ public class OutputFormatter {
         return sb.toString();
     }
 }
+
+class TableData {
+    private final String[] headers;
+    private final Object[][] rawData;
+    private final String[][] formattedData;
+    private final int[] columnWidths;
+
+    public TableData(String[] headers, Object[][] rawData) {
+        this.headers = headers;
+        this.rawData = rawData;
+        int columns = headers.length;
+        int rows = rawData.length;
+
+        this.formattedData = new String[rows][columns];
+        this.columnWidths = new int[columns];
+
+        for (int i = 0; i < columns; i++) {
+            columnWidths[i] = headers[i].length();
+        }
+    }
+    public void prepareFormattedData(DataFormatter formatter) {
+        int columns = headers.length;
+        int rows = rawData.length;
+
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < columns; col++) {
+                String formatted = formatter.format(rawData[row][col]);
+                formattedData[row][col] = formatted;
+
+                if (formatted.length() > columnWidths[col]) {
+                    columnWidths[col] = formatted.length();
+                }
+            }
+        }
+    }
+    public String[] getHeaders() {
+        return headers;
+    }
+
+    public String[][] getFormattedData() {
+        return formattedData;
+    }
+
+    public int[] getColumnWidths() {
+        return columnWidths;
+    }
+
+    public Object[][] getRawData() {
+        return rawData;
+    }
+}
+class DataFormatter {
+    private final SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+    private final DecimalFormat moneyf;
+    private final DecimalFormat numberf;
+
+    public DataFormatter() {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+        symbols.setDecimalSeparator(',');
+        symbols.setGroupingSeparator('.');
+
+        moneyf = new DecimalFormat();
+        moneyf.setDecimalFormatSymbols(symbols);
+        moneyf.applyPattern("###,##0.00");
+        moneyf.setGroupingSize(3);
+        moneyf.setGroupingUsed(true);
+
+        numberf = new DecimalFormat();
+        numberf.setDecimalFormatSymbols(symbols);
+        numberf.applyPattern("###.###");
+        numberf.setGroupingSize(3);
+        numberf.setGroupingUsed(true);
+    }
+    public String format(Object value) {
+        if(value==null){
+            return "-";
+        }
+        else if(value instanceof String ){
+            return((String)value).replace("\n"," ");
+        }
+        else if(value instanceof Date){
+            return sdf.format((Date)value);
+        }
+        else if(value instanceof Double || value instanceof Float){
+            return moneyf.format(((Number) value).doubleValue());
+        }
+        else if(value instanceof Number){
+            return numberf.format(((Number)value).doubleValue());
+        }
+        else {
+            return value.toString();
+        }
+    }
+    public boolean isRightAligned(Object value) {
+        return value instanceof Date|| value instanceof Number||value==null;
+        }
+    }
