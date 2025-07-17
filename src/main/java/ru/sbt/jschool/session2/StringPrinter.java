@@ -11,11 +11,16 @@ public class StringPrinter implements Printer {
 
     @Override
     public int length(Object obj) {
-        return ((String) obj).replace("\n", " ").length();
+        return ((String)obj).length();
     }
 
     @Override
     public String print(Object obj) {
         return ((String) obj).replace("\n", " ");
+    }
+
+    @Override
+    public boolean isRightAligned() {
+        return false;
     }
 }

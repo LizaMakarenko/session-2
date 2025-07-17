@@ -34,6 +34,18 @@ public class NumberPrinter implements Printer {
 
     @Override
     public int length(Object obj) {
-        return print(obj).length();
+        if (obj == null) return 1;
+        long value = ((Number) obj).longValue();
+
+        int digits = (value == 0) ? 1 : (int) Math.floor(Math.log10(Math.abs(value))) + 1;
+        int groupSeparators = (digits - 1) / 3;
+        int sign = value < 0 ? 1 : 0;
+
+        return digits + groupSeparators + sign;
+    }
+
+    @Override
+    public boolean isRightAligned() {
+        return true;
     }
 }

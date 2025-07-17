@@ -22,4 +22,9 @@ public class DatePrinter implements Printer {
     public String print(Object obj) {
         return sdf.format((Date) obj);
     }
+
+    @Override
+    public boolean isRightAligned() {
+        return true;
+    }
 }

@@ -22,6 +22,12 @@ public class DataFormatter {
             return obj == null ? 1 : print(obj).length();
         }
 
+        @Override
+        public boolean isRightAligned() {
+            return false;
+        }
+
+
     };
     private Printer printerFor(Object obj) {
         if (obj == null) return anyPrinter;
@@ -41,26 +47,24 @@ public class DataFormatter {
         }
     }
 
-    private Printer print(Object obj) {
-        if (obj == null) {
-            return anyPrinter;
-        }
-        return knownPrinters.getOrDefault(obj.getClass(), anyPrinter);
-    }
 
     public String format(Object value) {
-        return print(value).print(value);
-    }
-
-    public boolean isRightAligned(Object value, Class<?> expectedType) {
-        if (expectedType == null) return false;
-        if (String.class.isAssignableFrom(expectedType)) return false;
-        if (Number.class.isAssignableFrom(expectedType)) return true;
-        if (Date.class.isAssignableFrom(expectedType)) return true;
-        return false;
+        return printerFor(value).print(value);
     }
 
     public int length(Object value) {
         return printerFor(value).length(value);
+    }
+
+    public boolean isRightAligned(Object value, Class<?> expectedType) {
+        if (value != null) {
+            return printerFor(value).isRightAligned();
+        }
+        if (expectedType != null) {
+            if (String.class.isAssignableFrom(expectedType)) return false;
+            if (Number.class.isAssignableFrom(expectedType)) return true;
+            if (Date.class.isAssignableFrom(expectedType)) return true;
+        }
+        return false;
     }
 }

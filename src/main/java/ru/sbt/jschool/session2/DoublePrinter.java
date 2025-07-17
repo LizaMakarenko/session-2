@@ -23,12 +23,24 @@ public class DoublePrinter implements Printer {
 
     @Override
     public int length(Object obj) {
-        return print(obj).length();
-    }
+        if (obj == null) return 1;
+        double value = ((Number) obj).doubleValue();
 
+        int intPartLength = (value == 0) ? 1 : (int) Math.floor(Math.log10(Math.abs(value))) + 1;
+        int groupSeparators = (intPartLength - 1) / 3;
+        int decimalLength = 3;
+        int sign = value < 0 ? 1 : 0;
+
+        return intPartLength + groupSeparators + decimalLength + sign;
+    }
 
     @Override
     public String print(Object obj) {
         return moneyf.format(((Number) obj).doubleValue());
+    }
+
+    @Override
+    public boolean isRightAligned() {
+        return true;
     }
 }
