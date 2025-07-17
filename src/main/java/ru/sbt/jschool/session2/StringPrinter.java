@@ -11,7 +11,7 @@ public class StringPrinter implements Printer {
 
     @Override
     public int length(Object obj) {
-        return print(obj).length();
+        return ((String) obj).replace("\n", " ").length();
     }
 
     @Override

@@ -4,6 +4,7 @@ class TableData {
     private final String[] headers;
     private final Object[][] rawData;
     private final int[] columnWidths;
+    private final Class<?>[] columnTypes;
 
     public TableData(String[] headers, Object[][] rawData, DataFormatter formatter) {
         this.headers = headers;
@@ -25,6 +26,16 @@ class TableData {
                 }
             }
         }
+        this.columnTypes = new Class<?>[columns];
+        for (int col = 0; col < columns; col++) {
+            for (int row = 0; row < rows; row++) {
+                Object value = rawData[row][col];
+                if (value != null) {
+                    columnTypes[col] = value.getClass();
+                    break;
+                }
+            }
+        }
     }
 
     public String[] getHeaders() {
@@ -37,5 +48,8 @@ class TableData {
 
     public Object[][] getRawData() {
         return rawData;
+    }
+    public Class<?>[] getColumnTypes() {
+        return columnTypes;
     }
 }

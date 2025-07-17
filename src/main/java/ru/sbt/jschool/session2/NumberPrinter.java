@@ -10,7 +10,7 @@ public class NumberPrinter implements Printer {
 
     public NumberPrinter() {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-        symbols.setGroupingSeparator('.');
+        symbols.setGroupingSeparator(' ');
         symbols.setDecimalSeparator(',');
 
         numberFormat = new DecimalFormat("###,###");

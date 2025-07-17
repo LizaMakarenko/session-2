@@ -11,7 +11,7 @@ public class DoublePrinter implements Printer {
     public DoublePrinter() {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols();
         symbols.setDecimalSeparator(',');
-        symbols.setGroupingSeparator('.');
+        symbols.setGroupingSeparator(' ');
         moneyf = new DecimalFormat("###,##0.00");
         moneyf.setDecimalFormatSymbols(symbols);
     }
@@ -25,6 +25,7 @@ public class DoublePrinter implements Printer {
     public int length(Object obj) {
         return print(obj).length();
     }
+
 
     @Override
     public String print(Object obj) {

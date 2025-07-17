@@ -20,6 +20,7 @@ public class OutputFormatter {
         int[] columnWidths = tableData.getColumnWidths();
         String[] headers = tableData.getHeaders();
         Object[][] rawData = tableData.getRawData();
+        Class<?>[] columnTypes = tableData.getColumnTypes();
 
         printBorder(columnWidths);
 
@@ -35,7 +36,7 @@ public class OutputFormatter {
             for (int col = 0; col < headers.length; col++) {
                 Object value = rawData[row][col];
                 String text = formatter.format(value);
-                boolean rightAligned = formatter.isRightAligned(value);
+                boolean rightAligned = formatter.isRightAligned(value, columnTypes[col]);
                 String formatted = rightAligned
                         ? padLeft(text, columnWidths[col])
                         : padRight(text, columnWidths[col]);

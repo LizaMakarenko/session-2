@@ -15,7 +15,7 @@ public class DatePrinter implements Printer {
 
     @Override
     public int length(Object obj) {
-        return print(obj).length();
+        return 10;
     }
 
     @Override
